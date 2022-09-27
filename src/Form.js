@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
 
-function Form({ addToList }) {
+function Form({ addToList, updateForm }) {
   const [field, setField] = useState({
     title: "",
     type: "",
     name: "",
     placeholder: "",
   });
+
+  const [formId, setFormId] = useState(0);
+
+  const [selected, setSelected] = useState({});
   const [fields, setFields] = useState([]);
-  const [data, setData] = useState({});
+  const [data, setData] = useState({
+    metadata: {},
+    data: {},
+  });
 
   const addField = () => {
     setFields((prev) => [...prev, field]);
@@ -19,10 +26,15 @@ function Form({ addToList }) {
     fields.forEach((item) => {
       obj[item.name] = {
         ...item,
-        [item.name]: "",
+        name: "",
       };
     });
-    setData(obj);
+    setData((prev) => {
+      return {
+        ...prev,
+        data: obj,
+      };
+    });
   }, [fields]);
 
   const handleFieldChange = (e) => {
@@ -37,13 +49,21 @@ function Form({ addToList }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setData((prev) => {
       return {
+        // ...prev,
+        // [name]: {
+        //   ...prev[name],
+        //   name: value,
+        // },
+
         ...prev,
-        [name]: {
-          ...prev[name],
-          name: value,
+        data: {
+          ...prev.data,
+          [name]: {
+            ...prev.data[name],
+            name: value,
+          },
         },
       };
     });
@@ -51,12 +71,63 @@ function Form({ addToList }) {
 
   const handleSubmit = () => {
     addToList(data);
-    setData(field);
+    // setData(field);
+  };
+
+  const deleteField = (delItemName) => {
+    setFields((prev) => prev.filter((item) => item.name !== delItemName));
+  };
+
+  const selectField = (updateItemName) => {
+    setSelected({ ...data[updateItemName], name: updateItemName });
+  };
+
+  const updateField = () => {
+    setFields((prev) =>
+      prev.map((item) => {
+        if (item.name === selected.name) return field;
+        else return item;
+      })
+    );
+  };
+
+  useEffect(() => {
+    setField(selected);
+  }, [selected]);
+
+  // useEffect(() => {
+  //   console.log(data);
+  // }, [data]);
+
+  const updateId = (e) => {
+    const { name, value } = e.target;
+
+    setFormId(value);
+    setData((prev) => {
+      return {
+        ...prev,
+        metadata: {
+          ...prev.metadata,
+          [name]: value,
+        },
+      };
+    });
   };
 
   return (
     <div>
       <h3>Add Field</h3>
+      <h4>
+        {" "}
+        Form ID :{" "}
+        <input
+          type="text"
+          name="formId"
+          value={formId}
+          onChange={(e) => updateId(e)}
+        />
+      </h4>
+
       <div>
         <label htmlFor="title">Title</label>
         <br />
@@ -95,26 +166,29 @@ function Form({ addToList }) {
         />
         <br />
         <button onClick={() => addField()}>Add Field</button>
+        <button onClick={() => updateField()}>Update Field</button>
       </div>
       <h3>This is a Form </h3>
 
-      <form onSubmit={handleSubmit}>
-        {Object.keys(data).map((item, index) => {
+      <div>
+        {Object.keys(data.data).map((item, index) => {
           return (
             <div key={index}>
-              <label htmlFor={item}>{data[item].title}</label>
+              <label htmlFor={item}>{data.data[item].title}</label>
               <br />
               <input
-                type={data[item].type}
+                type={data.data[item].type}
                 name={item}
-                value={data[item].name}
-                placeholder={data[item].placeholder}
+                value={data.data[item].name}
+                placeholder={data.data[item].placeholder}
                 onChange={(e) => handleChange(e)}
               />
+              <button onClick={() => deleteField(item)}>Delete</button>
+              <button onClick={() => selectField(item)}>Update</button>
             </div>
           );
         })}
-      </form>
+      </div>
       {/* <h3>
         {" "}
         Name : {data.name} , Age : {data.age}{" "}

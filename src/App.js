@@ -9,6 +9,9 @@ function App() {
   const addToList = (item) => {
     setList((prev) => [...prev, item]);
   };
+  const removeForm = (id) => {
+    setList((prev) => prev.filter((item) => item.metadata.formId !== id));
+  };
   return (
     <>
       <Form addToList={addToList} />
@@ -16,6 +19,9 @@ function App() {
       {list.map((item, index) => (
         <div key={index}>
           <DisplayForm data={item} />
+          <button onClick={() => removeForm(item.metadata.formId)}>
+            Delete Form
+          </button>
         </div>
       ))}
     </>
