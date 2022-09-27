@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 
 function Form({ addToList, updateForm }) {
+  const [selected, setSelected] = useState({});
+  const [fields, setFields] = useState([]);
+  const [inputType, setInputType] = useState("string");
+  const [data, setData] = useState({
+    metadata: {},
+    data: {},
+  });
+
   const [field, setField] = useState({
     title: "",
     type: "",
@@ -8,17 +16,33 @@ function Form({ addToList, updateForm }) {
     placeholder: "",
   });
 
-  const [formId, setFormId] = useState(0);
-
-  const [selected, setSelected] = useState({});
-  const [fields, setFields] = useState([]);
-  const [data, setData] = useState({
-    metadata: {},
-    data: {},
+  const [metaData, setMetaData] = useState({
+    formId: 0,
+    creatorName: "",
+    createTime: 0,
   });
 
-  const addField = () => {
-    setFields((prev) => [...prev, field]);
+  useEffect(() => {
+    setField(selected);
+  }, [selected]);
+
+  useEffect(() => {
+    setData((prev) => {
+      return {
+        ...prev,
+        metadata: metaData,
+      };
+    });
+  }, [metaData]);
+
+  const handleMetaChange = (e) => {
+    const { name, value } = e.target;
+    setMetaData((prev) => {
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
   };
 
   useEffect(() => {
@@ -37,6 +61,10 @@ function Form({ addToList, updateForm }) {
     });
   }, [fields]);
 
+  const addField = () => {
+    setFields((prev) => [...prev, field]);
+  };
+
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setField((prev) => {
@@ -51,12 +79,6 @@ function Form({ addToList, updateForm }) {
     const { name, value } = e.target;
     setData((prev) => {
       return {
-        // ...prev,
-        // [name]: {
-        //   ...prev[name],
-        //   name: value,
-        // },
-
         ...prev,
         data: {
           ...prev.data,
@@ -70,7 +92,13 @@ function Form({ addToList, updateForm }) {
   };
 
   const handleSubmit = () => {
-    addToList(data);
+    addToList({
+      ...data,
+      metadata: {
+        ...data.metadata,
+        createTime: new Date().toLocaleDateString(),
+      },
+    });
     // setData(field);
   };
 
@@ -79,7 +107,7 @@ function Form({ addToList, updateForm }) {
   };
 
   const selectField = (updateItemName) => {
-    setSelected({ ...data[updateItemName], name: updateItemName });
+    setSelected({ ...data.data[updateItemName], name: updateItemName });
   };
 
   const updateField = () => {
@@ -91,86 +119,109 @@ function Form({ addToList, updateForm }) {
     );
   };
 
-  useEffect(() => {
-    setField(selected);
-  }, [selected]);
+  const handleInputType = (e) => {
+    const { value } = e.target;
+    setInputType(value);
+    setField((prev) => {
+      return {
+        ...prev,
+        type: value,
+      };
+    });
+  };
 
   // useEffect(() => {
   //   console.log(data);
   // }, [data]);
 
-  const updateId = (e) => {
-    const { name, value } = e.target;
-
-    setFormId(value);
-    setData((prev) => {
-      return {
-        ...prev,
-        metadata: {
-          ...prev.metadata,
-          [name]: value,
-        },
-      };
-    });
-  };
-
   return (
     <div>
-      <h3>Add Field</h3>
-      <h4>
-        {" "}
-        Form ID :{" "}
-        <input
-          type="text"
-          name="formId"
-          value={formId}
-          onChange={(e) => updateId(e)}
-        />
-      </h4>
-
       <div>
-        <label htmlFor="title">Title</label>
-        <br />
-        <input
-          type="text"
-          name="title"
-          value={field.title}
-          onChange={(e) => handleFieldChange(e)}
-        />
-        <br />
-        <label htmlFor="name">Name Attribute </label>
-        <br />
-        <input
-          type="text"
-          name="name"
-          value={field.name}
-          onChange={(e) => handleFieldChange(e)}
-        />
-        <br />
-        <label htmlFor="type">Type</label>
-        <br />
-        <input
-          type="text"
-          name="type"
-          value={field.type}
-          onChange={(e) => handleFieldChange(e)}
-        />
-        <br />
-        <label htmlFor="type">Placeholder</label>
-        <br />
-        <input
-          type="text"
-          name="placeholder"
-          value={field.placeholder}
-          onChange={(e) => handleFieldChange(e)}
-        />
-        <br />
-        <button onClick={() => addField()}>Add Field</button>
-        <button onClick={() => updateField()}>Update Field</button>
+        <h3>Add Fields</h3>
+        <h4>
+          <label htmlFor="formId">Form Id : </label>
+          <input
+            type="text"
+            name="formId"
+            value={metaData.formId}
+            onChange={(e) => handleMetaChange(e)}
+          />
+        </h4>
+        <h4>
+          <label htmlFor="creatorName">Create By : </label>
+          <input
+            type="text"
+            name="creatorName"
+            value={metaData.creatorName}
+            onChange={(e) => handleMetaChange(e)}
+          />
+        </h4>
+
+        <div>
+          <label htmlFor="title">Title</label>
+          <br />
+          <input
+            type="text"
+            name="title"
+            value={field.title}
+            onChange={(e) => handleFieldChange(e)}
+          />
+          <br />
+          <label htmlFor="name">Name Attribute </label>
+          <br />
+          <input
+            type="text"
+            name="name"
+            value={field.name}
+            onChange={(e) => handleFieldChange(e)}
+          />
+          <br />
+          {/* <label htmlFor="type">Type</label>
+          <br />
+          <input
+            type="text"
+            name="type"
+            value={field.type}
+            onChange={(e) => handleFieldChange(e)}
+          />
+          <br /> */}
+          <span>Select Type: </span>
+          <br />
+          <label htmlFor="inputType">String</label>
+          <input
+            type="radio"
+            name="inputType"
+            value="string"
+            checked={inputType === "string"}
+            onChange={(e) => handleInputType(e)}
+          />
+          <br />
+          <label htmlFor="inputType">Number</label>
+          <input
+            type="radio"
+            name="inputType"
+            value="number"
+            checked={inputType === "number"}
+            onChange={(e) => handleInputType(e)}
+          />
+          <br />
+          <br />
+          <label htmlFor="type">Placeholder</label>
+          <br />
+          <input
+            type="text"
+            name="placeholder"
+            value={field.placeholder}
+            onChange={(e) => handleFieldChange(e)}
+          />
+          <br />
+          <button onClick={() => addField()}>Add Field</button>
+          <button onClick={() => updateField()}>Update Field</button>
+        </div>
       </div>
-      <h3>This is a Form </h3>
-
       <div>
+        <h3>This is a Form </h3>
+
         {Object.keys(data.data).map((item, index) => {
           return (
             <div key={index}>
@@ -188,12 +239,9 @@ function Form({ addToList, updateForm }) {
             </div>
           );
         })}
+
+        <button onClick={() => handleSubmit()}>Submit </button>
       </div>
-      {/* <h3>
-        {" "}
-        Name : {data.name} , Age : {data.age}{" "}
-      </h3> */}
-      <button onClick={() => handleSubmit()}>Submit </button>
     </div>
   );
 }

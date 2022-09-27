@@ -3,8 +3,10 @@ import React from "react";
 function DisplayForm({ data }) {
   return (
     <div>
-      <h3>Form </h3>
-      <p> {JSON.stringify(data)} </p>
+      <h3>Form : {data.metadata.formId} </h3>
+      <h3>Created By : {data.metadata.creatorName} </h3>
+      <h3>Created At : {data.metadata.createTime} </h3>
+      <pre> {JSON.stringify(data, null, 2)} </pre>
       <form>
         {Object.keys(data.data).map((item, index) => {
           return (
